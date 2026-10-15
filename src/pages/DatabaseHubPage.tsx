@@ -43,7 +43,7 @@ export const DatabaseHubPage: React.FC = () => {
   const [formCategory, setFormCategory] = useState<DatabaseRecord['category']>('bahan_kuliah');
   const [formTitle, setFormTitle] = useState('');
   const [formDescription, setFormDescription] = useState('');
-  const [formAuthor, setFormAuthor] = useState('Ts. / En. Nasrul Effendy');
+  const [formAuthor, setFormAuthor] = useState('En. Nasrul Effendy');
   const [formEmail, setFormEmail] = useState('nasrul.effendy@ptss.edu.my');
   const [formStatus, setFormStatus] = useState<DatabaseRecord['status']>('Baru');
   const [formTags, setFormTags] = useState('');
@@ -86,7 +86,7 @@ export const DatabaseHubPage: React.FC = () => {
     setFormCategory('bahan_kuliah');
     setFormTitle('');
     setFormDescription('');
-    setFormAuthor('Ts. / En. Nasrul Effendy');
+    setFormAuthor('En. Nasrul Effendy');
     setFormEmail('nasrul.effendy@ptss.edu.my');
     setFormStatus('Baru');
     setFormTags('');

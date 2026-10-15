@@ -14,21 +14,21 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Col 1: Bio & Institution */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-amber-400 font-black text-sm">
                 NE
               </div>
               <div>
-                <h3 className="font-bold text-white text-base">Nadz Effendy</h3>
-                <p className="text-xs text-indigo-400 font-medium">{PERSONAL_INFO.title}</p>
+                <h3 className="font-extrabold text-white text-base">En. Nasrul Effendy</h3>
+                <p className="text-xs text-amber-400 font-bold">{PERSONAL_INFO.title}</p>
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Portal peribadi dan repositori akademik rasmi Ts. / En. Nasrul Effendy bin Mat Nasir, pensyarah kanan di Jabatan Teknologi Maklumat & Komunikasi, Politeknik Tuanku Syed Sirajuddin, Perlis.
+              Portal peribadi dan repositori akademik rasmi En. Nasrul Effendy bin Mat Nasir, Pensyarah Kanan di Jabatan Teknologi Maklumat & Komunikasi, Politeknik Tuanku Syed Sirajuddin, Perlis.
             </p>
-            <div className="flex items-center gap-2 text-xs text-emerald-400">
+            <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold">
               <Shield className="w-4 h-4" />
-              <span>Gred DH12 • Lantikan 2005</span>
+              <span>Gred DH12 • Lantikan 15 Ogos 2005</span>
             </div>
           </div>
 
@@ -39,7 +39,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('home')}
-                  className="hover:text-indigo-400 transition-colors cursor-pointer text-slate-400"
+                  className="hover:text-amber-400 transition-colors cursor-pointer text-slate-400"
                 >
                   Laman Utama
                 </button>
@@ -47,7 +47,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('profile')}
-                  className="hover:text-indigo-400 transition-colors cursor-pointer text-slate-400"
+                  className="hover:text-amber-400 transition-colors cursor-pointer text-slate-400"
                 >
                   Biodata & Pengalaman Perkhidmatan
                 </button>
@@ -55,7 +55,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('teaching')}
-                  className="hover:text-indigo-400 transition-colors cursor-pointer text-slate-400"
+                  className="hover:text-amber-400 transition-colors cursor-pointer text-slate-400"
                 >
                   Pengajaran & Kursus JTMK
                 </button>
@@ -63,7 +63,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('innovations')}
-                  className="hover:text-indigo-400 transition-colors cursor-pointer text-slate-400"
+                  className="hover:text-amber-400 transition-colors cursor-pointer text-slate-400"
                 >
                   Sistem Inovasi (iPMAS, IAS, iCERT)
                 </button>
@@ -71,7 +71,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('publications')}
-                  className="hover:text-indigo-400 transition-colors cursor-pointer text-slate-400"
+                  className="hover:text-amber-400 transition-colors cursor-pointer text-slate-400"
                 >
                   Penerbitan & Penyelidikan (SPSH, ICOCI, Buku)
                 </button>
@@ -86,7 +86,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button
                   onClick={() => onNavigate('database')}
-                  className="flex items-center gap-1.5 hover:text-indigo-400 transition-colors cursor-pointer text-slate-400"
+                  className="flex items-center gap-1.5 hover:text-amber-400 transition-colors cursor-pointer text-slate-400"
                 >
                   <Database className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Pangkalan Data Dinamik Portal</span>
@@ -145,7 +145,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         </div>
 
         <div className="mt-12 pt-6 border-t border-slate-900 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-4">
-          <p>© {new Date().getFullYear()} Ts. / En. Nasrul Effendy bin Mat Nasir. Hak Cipta Terpelihara.</p>
+          <p>© {new Date().getFullYear()} En. Nasrul Effendy bin Mat Nasir. Hak Cipta Terpelihara.</p>
           <div className="flex items-center gap-4">
             <span>Politeknik Tuanku Syed Sirajuddin</span>
             <span>•</span>

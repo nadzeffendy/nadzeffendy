@@ -57,7 +57,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
           </div>
           <h1 className="text-3xl font-black text-slate-900 mt-1">Hubungi & Khidmat Kepakaran</h1>
           <p className="text-sm text-slate-500">
-            Hubungi Ts. / En. Nasrul Effendy untuk urusan akademik PTSS, jemputan ceramah AI & keusahawanan, atau konsultasi teknikal.
+            Hubungi En. Nasrul Effendy untuk urusan akademik PTSS, jemputan ceramah AI & keusahawanan, atau konsultasi teknikal.
           </p>
         </div>
 

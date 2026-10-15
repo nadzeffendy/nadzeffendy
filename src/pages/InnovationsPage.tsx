@@ -99,6 +99,29 @@ export const InnovationsPage: React.FC<InnovationsPageProps> = ({ onNavigate }) 
               </div>
             </div>
 
+            {/* If SISPEN3K, show live mockup banner matching screenshot */}
+            {selectedProject.acronym === 'SISPEN3K' && (
+              <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-500/40 text-white space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                    Kursus Kemahiran Kelana (3K) • Daerah KSM PTSS
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="px-3 py-1 rounded-lg text-xs font-bold bg-amber-400 text-slate-950">
+                    Mula Menilai
+                  </span>
+                  <span className="px-3 py-1 rounded-lg text-xs font-bold bg-emerald-800 text-white border border-emerald-600">
+                    Daftar Penilai
+                  </span>
+                  <span className="text-[11px] text-emerald-300 font-semibold ml-2">
+                    Daerah KSM Politeknik Tuanku Syed Sirajuddin
+                  </span>
+                </div>
+              </div>
+            )}
+
             <div className="pt-4 flex flex-wrap items-center gap-3">
               <button
                 onClick={() => onNavigate('drive')}

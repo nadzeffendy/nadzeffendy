@@ -238,6 +238,22 @@ export const INNOVATIONS: InnovationProject[] = [
     iconName: 'Sparkles',
   },
   {
+    id: 'inv-sispen3k',
+    year: '2024',
+    acronym: 'SISPEN3K',
+    title: 'Sistem Penilaian Bersepadu Kursus Kemahiran Kelana (3K)',
+    category: 'Sistem Penilaian Digital Kokurikulum & Pengakap',
+    description: 'Sistem Penilaian Bersepadu Kursus Kemahiran Kelana (Daerah KSM Politeknik Tuanku Syed Sirajuddin) untuk menguruskan pentaksiran kemahiran kelana, pendaftaran penilai, dan pensijilan berpusat.',
+    features: [
+      'Modul penilaian Kursus Kemahiran Kelana (3K) berkomputer',
+      'Pendaftaran dan pengesahan penilai Daerah KSM PTSS',
+      'Penjanaan keputusan penilaian dan penggredan bersepadu',
+      'Pengurusan rekod calon kelanasiswa secara sistematik',
+    ],
+    status: 'Completed',
+    iconName: 'Award',
+  },
+  {
     id: 'inv-2',
     year: '2022',
     acronym: 'IAS',

@@ -286,7 +286,7 @@ export const GoogleDrivePage: React.FC<GoogleDrivePageProps> = ({
               <p className="text-xs text-slate-600 mt-0.5">
                 {isLiveDrive
                   ? 'Anda sedang melihat fail sebenar daripada Google Drive anda dengan keizinan OAuth yang sah.'
-                  : 'Dokumen di bawah adalah bahan arkib akademik, silibus PTSS dan buku Ts. / En. Nasrul Effendy. Log masuk untuk memuat naik fail atau melihat storan Google Drive peribadi anda.'}
+                  : 'Dokumen di bawah adalah bahan arkib akademik, silibus PTSS dan buku En. Nasrul Effendy. Log masuk untuk memuat naik fail atau melihat storan Google Drive peribadi anda.'}
               </p>
             </div>
           </div>
