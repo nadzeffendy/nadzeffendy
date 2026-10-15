@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { PageId } from '../types';
 import { User as FirebaseUser } from 'firebase/auth';
+import { AvatarDisplay } from './AvatarDisplay';
 
 interface NavbarProps {
   currentPage: PageId;
@@ -70,10 +71,8 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => handleNavClick('home')}
             className="flex items-center gap-3 cursor-pointer group select-none"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-blue-600 to-cyan-500 p-0.5 shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-white font-extrabold text-sm tracking-wider">
-                NE
-              </div>
+            <div className="flex-shrink-0">
+              <AvatarDisplay size="sm" allowUpload={false} />
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">

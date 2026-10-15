@@ -26,6 +26,7 @@ export const PERSONAL_INFO = {
   gender: 'Lelaki',
   ethnicity: 'Melayu',
   grade: 'DH12',
+  photoUrl: '',
   firstAppointmentDate: '15 Ogos 2005',
   confirmationDate: '29 Mei 2009',
   bio: 'Pendidik berwawasan dan pakar teknologi maklumat dengan lebih 20 tahun pengalaman dalam sektor Pendidikan Pengajian Tinggi TVET Malaysia. Pakar dalam bidang Keselamatan Siber, Kecerdasan Buatan (AI), Komunikasi Data Rangkaian, serta Inovasi Pengurusan Digital & Google Workspace. Aktif sebagai penceramah keusahawanan digital, penyelidik peringkat antarabangsa, dan pemimpin kokurikulum kepengakapan negara.',

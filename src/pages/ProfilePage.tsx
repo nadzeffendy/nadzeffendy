@@ -22,6 +22,7 @@ import {
   AWARDS,
   REFERENCES,
 } from '../data/nadzEffendyData';
+import { AvatarDisplay } from '../components/AvatarDisplay';
 
 export const ProfilePage: React.FC = () => {
   const handlePrint = () => {
@@ -50,6 +51,23 @@ export const ProfilePage: React.FC = () => {
           <Printer className="w-4 h-4 text-slate-600" />
           <span>Cetak / Simpan PDF</span>
         </button>
+      </div>
+
+      {/* Biographical Hero Card with Official Photo */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white shadow-xl flex flex-col sm:flex-row items-center gap-6 sm:gap-8 border border-indigo-900/40">
+        <AvatarDisplay size="lg" allowUpload={true} />
+        <div className="space-y-2 text-center sm:text-left flex-1">
+          <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-indigo-500/20 text-cyan-300 text-xs font-bold border border-cyan-400/30">
+            <span>Pegawai Pendidikan Pengajian Tinggi • Gred DH12</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-black text-white">{PERSONAL_INFO.name}</h2>
+          <p className="text-xs sm:text-sm text-indigo-200 font-semibold">
+            {PERSONAL_INFO.department}, {PERSONAL_INFO.institution}
+          </p>
+          <p className="text-xs text-slate-300 max-w-2xl leading-relaxed pt-1">
+            {PERSONAL_INFO.bio}
+          </p>
+        </div>
       </div>
 
       {/* Grid: Maklumat Peribadi & Perkhidmatan */}

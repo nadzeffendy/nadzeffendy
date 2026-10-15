@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { PageId } from '../types';
 import { PERSONAL_INFO, INNOVATIONS, PUBLICATIONS, TEACHING_COURSES } from '../data/nadzEffendyData';
+import { AvatarDisplay } from '../components/AvatarDisplay';
 
 interface HomePageProps {
   onNavigate: (page: PageId) => void;
@@ -43,30 +44,10 @@ export const HomePage: React.FC<HomePageProps> = ({
           <div className="flex flex-col md:flex-row items-center gap-8 lg:gap-12">
             {/* Profile Avatar / Badge */}
             <div className="flex-shrink-0 flex flex-col items-center">
-              <div className="relative group">
-                <div className="w-36 h-36 sm:w-44 sm:h-44 rounded-3xl bg-gradient-to-tr from-indigo-600 via-blue-700 to-cyan-500 p-1.5 shadow-xl shadow-indigo-600/20 transform transition-transform group-hover:scale-102">
-                  <div className="w-full h-full bg-slate-900 rounded-[22px] overflow-hidden flex flex-col items-center justify-center text-center p-4 relative">
-                    {/* Professional silhouette with monogram */}
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-indigo-500 to-blue-700 flex items-center justify-center text-white text-3xl sm:text-4xl font-extrabold shadow-inner border-2 border-white/20">
-                      NE
-                    </div>
-                    <span className="mt-2 text-xs font-bold text-white tracking-wide">
-                      Ts. / En. Nasrul Effendy
-                    </span>
-                    <span className="text-[10px] text-cyan-300 font-medium">
-                      DH12 • PTSS Perlis
-                    </span>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Aktif Bertugas</span>
-                </div>
-              </div>
+              <AvatarDisplay size="xl" allowUpload={true} />
 
               {/* Status pill under image */}
-              <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white px-3 py-1 rounded-full border border-slate-200/80 shadow-2xs">
+              <div className="mt-5 flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white px-3 py-1 rounded-full border border-slate-200/80 shadow-2xs">
                 <span className="w-2 h-2 rounded-full bg-blue-600" />
                 <span>JTMK PTSS Pauh Putra</span>
               </div>
