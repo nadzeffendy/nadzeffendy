@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowRight,
   BookOpen,
   Lightbulb,
   GraduationCap,
   HardDrive,
-  Database,
   Award,
   Sparkles,
   Shield,
@@ -19,8 +18,17 @@ import {
   Layers,
   Building,
   UserCheck,
+  FolderOpen,
+  Globe,
+  Plus,
+  Edit2,
+  Trash2,
+  Link as LinkIcon,
+  ShieldCheck,
+  X,
+  Save,
 } from 'lucide-react';
-import { PageId } from '../types';
+import { PageId, NavigationLink } from '../types';
 import {
   PERSONAL_INFO,
   INNOVATIONS,
@@ -33,108 +41,234 @@ import {
   REFERENCES,
 } from '../data/nadzEffendyData';
 import { AvatarDisplay } from '../components/AvatarDisplay';
+import { CVInfographicSection } from '../components/CVInfographicSection';
+import {
+  getAdminInnovations,
+  getAdminNavLinks,
+  getAdminProfile,
+  updateAdminProfile,
+  addAdminNavLink,
+  deleteAdminNavLink,
+  subscribeToAdminData,
+} from '../services/adminDataService';
 
 interface HomePageProps {
   onNavigate: (page: PageId) => void;
   onOpenSearch: () => void;
   googleConnected: boolean;
+  isAdmin?: boolean;
 }
 
 export const HomePage: React.FC<HomePageProps> = ({
   onNavigate,
   onOpenSearch,
   googleConnected,
+  isAdmin = false,
 }) => {
-  const latestInno = INNOVATIONS;
-  const latestPubs = PUBLICATIONS.slice(0, 4);
+  const [profile, setProfile] = useState(getAdminProfile());
+  const [latestInno, setLatestInno] = useState(getAdminInnovations());
+  const [navLinks, setNavLinks] = useState<NavigationLink[]>(getAdminNavLinks());
+  const [selectedNavFilter, setSelectedNavFilter] = useState<string>('all');
+
+  // Quick Inline Edit Modals for Admin
+  const [isHeroEditOpen, setIsHeroEditOpen] = useState(false);
+  const [editHeroName, setEditHeroName] = useState(profile.name);
+  const [editHeroTitle, setEditHeroTitle] = useState(profile.title);
+  const [editHeroBio, setEditHeroBio] = useState(profile.bio);
+
+  // Quick Add Link Modal for Admin
+  const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
+  const [newLinkTitle, setNewLinkTitle] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
+  const [newLinkType, setNewLinkType] = useState<'website' | 'drive'>('website');
+  const [newLinkCategory, setNewLinkCategory] = useState<'teroka' | 'penyelidikan' | 'pengajaran' | 'inovasi' | 'quicklink'>('teroka');
+  const [newLinkBadge, setNewLinkBadge] = useState('');
+  const [newLinkDesc, setNewLinkDesc] = useState('');
+
+  const loadData = () => {
+    const p = getAdminProfile();
+    setProfile(p);
+    setEditHeroName(p.name);
+    setEditHeroTitle(p.title);
+    setEditHeroBio(p.bio);
+    setLatestInno(getAdminInnovations());
+    setNavLinks(getAdminNavLinks());
+  };
+
+  useEffect(() => {
+    loadData();
+    const unsub = subscribeToAdminData(() => {
+      loadData();
+    });
+    return () => unsub();
+  }, []);
 
   const whatsappUrl = `https://wa.me/60194090902?text=${encodeURIComponent(
-    'Assalamualaikum En. Nasrul Effendy, saya ingin berhubung berkenaan kolaborasi/jemputan ceramah/akademik.'
+    'Salam En. Nasrul Effendy, saya ingin berhubung berkenaan kolaborasi/jemputan ceramah/inovasi TVET.'
   )}`;
 
+  const scrollToCV = () => {
+    const el = document.getElementById('cv-section');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      onNavigate('cv');
+    }
+  };
+
+  const handleSaveHero = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateAdminProfile({
+      name: editHeroName,
+      title: editHeroTitle,
+      bio: editHeroBio,
+    });
+    setIsHeroEditOpen(false);
+  };
+
+  const handleCreateQuickLink = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newLinkTitle || !newLinkUrl) return;
+
+    addAdminNavLink({
+      title: newLinkTitle.trim(),
+      url: newLinkUrl.trim(),
+      type: newLinkType,
+      category: newLinkCategory,
+      description: newLinkDesc.trim() || undefined,
+      badge: newLinkBadge.trim() || (newLinkType === 'drive' ? 'Google Drive' : 'Website'),
+    });
+
+    setIsAddLinkModalOpen(false);
+    setNewLinkTitle('');
+    setNewLinkUrl('');
+    setNewLinkDesc('');
+    setNewLinkBadge('');
+  };
+
+  const handleDeleteLink = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm('Adakah anda pasti ingin memadam pautan navigasi ini?')) {
+      deleteAdminNavLink(id);
+    }
+  };
+
+  const filteredLinks = navLinks.filter(l => {
+    if (selectedNavFilter === 'all') return true;
+    if (selectedNavFilter === 'drive') return l.type === 'drive';
+    if (selectedNavFilter === 'website') return l.type === 'website';
+    return l.category === selectedNavFilter;
+  });
+
   return (
-    <div className="space-y-20 pb-20 -mt-2">
-      {/* Hero Section (Matching amirulhelmi.my layout) */}
-      <section className="relative overflow-hidden pt-8 sm:pt-14 pb-12">
+    <div className="space-y-16 pb-20 bg-white">
+      {/* =========================================================================
+          HERO SECTION (Matching Screenshot 1 of amirulhelmi.my)
+          ========================================================================= */}
+      <section className="relative overflow-hidden pt-10 sm:pt-16 pb-12 sm:pb-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-            {/* Left Copy Column */}
-            <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-black tracking-widest text-amber-500 uppercase">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>PEGAWAI PENDIDIKAN PENGAJIAN TINGGI (DH12)</span>
+            {/* Left Column: Big Bold Typography & Content */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              {/* Gold Category Eyebrow */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs sm:text-sm font-extrabold tracking-widest text-amber-600 uppercase">
+                    PENSYARAH • JABATAN TEKNOLOGI MAKLUMAT & KOMUNIKASI • PTSS
+                  </span>
+                </div>
+
+                {/* Inline Edit for Admin */}
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsHeroEditOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-lg text-xs font-bold transition-colors cursor-pointer"
+                    title="Sunting Tajuk & Biodata Hero"
+                  >
+                    <Edit2 className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Sunting Hero</span>
+                  </button>
+                )}
               </div>
 
-              <h1 className="text-4xl sm:text-6xl xl:text-7xl font-black text-slate-900 tracking-tight leading-[1.05]">
-                Nasrul Effendy
-                <br />
-                <span className="text-slate-400 font-bold text-3xl sm:text-5xl xl:text-6xl">
-                  Bin Mat Nasir
-                </span>
+              {/* Massive 3-line Editorial Display Heading matching Screenshot 1 */}
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-[#0c1f38] tracking-tight leading-[1.05]">
+                Nasrul<br />
+                Effendy<br />
+                Bin Mat Nasir
               </h1>
 
-              <p className="text-xs sm:text-sm font-bold text-amber-700 tracking-wide uppercase">
-                Pensyarah Kanan <span className="text-slate-300">•</span> Pakar Keselamatan Siber & Rangkaian <span className="text-slate-300">•</span> Penyelidik AI & TVET <span className="text-slate-300">•</span> Penceramah CIDB & NCER
+              {/* Subheading with bullet separators matching Screenshot 1 */}
+              <p className="text-slate-900 font-bold text-sm sm:text-base flex flex-wrap items-center gap-2">
+                <span>Senior Lecturer</span>
+                <span className="text-amber-500 font-black">•</span>
+                <span>TVET Researcher</span>
+                <span className="text-amber-500 font-black">•</span>
+                <span>SISPEN3K Digital Innovator</span>
+                <span className="text-amber-500 font-black">•</span>
+                <span>System Consultant</span>
               </p>
 
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl font-normal">
-                Pensyarah Kanan dan Pegawai Pendidikan Pengajian Tinggi (Gred DH12) di Jabatan Teknologi Maklumat dan Komunikasi, Politeknik Tuanku Syed Sirajuddin dengan lebih 20 tahun pengalaman merentas keselamatan siber, komunikasi data rangkaian, kecerdasan buatan kreatif (AI), inovasi pengurusan kertas kerja digital, dan keusahawanan digital.
+              {/* Bio description */}
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-xl font-normal">
+                {profile.bio ||
+                  'Pensyarah Kanan dan penyelidik di Politeknik Tuanku Syed Sirajuddin (PTSS) dengan fokus merentas teknologi maklumat, keselamatan siber, inovasi digital TVET (SISPEN3K, iPMAS, IAS, iCERT), pembangunan web & platform, e-pembelajaran, dan sistem data pintar.'}
               </p>
 
-              {/* Action Buttons */}
-              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-3">
+              {/* Action Buttons matching Screenshot 1: [Lihat CV Lengkap] [Teroka Penyelidikan] */}
+              <div className="pt-2 flex flex-wrap items-center gap-3">
                 <button
-                  onClick={() => onNavigate('profile')}
-                  className="px-6 py-3 rounded-xl text-xs sm:text-sm font-black text-white bg-slate-950 hover:bg-slate-800 shadow-md transition-all cursor-pointer flex items-center gap-2"
+                  type="button"
+                  onClick={scrollToCV}
+                  className="px-6 py-3.5 rounded-xl text-sm font-semibold text-white bg-[#0a1e36] hover:bg-[#071628] shadow-md transition-all hover:scale-102 active:scale-98 cursor-pointer flex items-center gap-2"
                 >
                   <FileText className="w-4 h-4 text-amber-400" />
                   <span>Lihat CV Lengkap</span>
                 </button>
 
                 <button
+                  type="button"
                   onClick={() => onNavigate('publications')}
-                  className="px-5 py-3 rounded-xl text-xs sm:text-sm font-bold text-slate-700 bg-white hover:bg-slate-100 border border-slate-300 shadow-2xs transition-all cursor-pointer flex items-center gap-2"
+                  className="px-6 py-3.5 rounded-xl text-sm font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 shadow-xs transition-all hover:scale-102 active:scale-98 cursor-pointer flex items-center gap-2"
                 >
                   <span>Teroka Penyelidikan</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
                 </button>
 
-                <button
-                  onClick={() => onNavigate('drive')}
-                  className="px-4 py-3 rounded-xl text-xs sm:text-sm font-bold text-slate-900 bg-amber-400 hover:bg-amber-300 shadow-md shadow-amber-500/20 transition-all cursor-pointer flex items-center gap-2"
-                >
-                  <span className="font-mono text-sm">▣</span>
-                  <span>Google Drive</span>
-                </button>
-
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-500 shadow-md transition-all cursor-pointer flex items-center gap-2"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  <span>WhatsApp</span>
-                </a>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => onNavigate('admin')}
+                    className="px-4 py-3.5 rounded-xl text-sm font-bold text-amber-900 bg-amber-400 hover:bg-amber-300 shadow-sm transition-all hover:scale-102 active:scale-98 cursor-pointer flex items-center gap-2"
+                  >
+                    <ShieldCheck className="w-4 h-4 text-slate-950" />
+                    <span>Panel Pentadbir</span>
+                  </button>
+                )}
               </div>
             </div>
 
-            {/* Right Visual Column (Matching amirulhelmi.my portrait visual frame) */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end">
-              <AvatarDisplay size="hero" allowUpload={true} />
+            {/* Right Column: Portrait Photo Visual matching Screenshot 1 */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end relative">
+              <AvatarDisplay size="hero" allowUpload={isAdmin} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* Marquee Ticker (Exact feature from amirulhelmi.my) */}
-      <section className="bg-slate-950 text-white py-3 border-y border-slate-800 overflow-hidden shadow-inner">
+      {/* =========================================================================
+          MARQUEE TICKER (Matching amirulhelmi.my)
+          ========================================================================= */}
+      <section className="bg-[#0c1f38] text-white py-3 border-y border-slate-800 overflow-hidden shadow-inner">
         <div className="animate-ticker flex items-center gap-8 text-xs font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap">
           <span>Cybersecurity Fundamentals</span>
           <i className="text-amber-400 not-italic">✦</i>
           <span>Network & Data Communication</span>
           <i className="text-amber-400 not-italic">✦</i>
           <span>TVET 360° & Lifelong Learning</span>
+          <i className="text-amber-400 not-italic">✦</i>
+          <span>SISPEN3K Sistem Kemahiran Kelana</span>
           <i className="text-amber-400 not-italic">✦</i>
           <span>Creative AI & ChatGPT Heroes</span>
           <i className="text-amber-400 not-italic">✦</i>
@@ -144,442 +278,572 @@ export const HomePage: React.FC<HomePageProps> = ({
           <i className="text-amber-400 not-italic">✦</i>
           <span>Persekutuan Pengakap Malaysia</span>
           <i className="text-amber-400 not-italic">✦</i>
-          <span>iPMAS & Intelligent Assessment System</span>
+          <span>iPMAS Intelligent Paperwork System</span>
           <i className="text-amber-400 not-italic">✦</i>
-          {/* Duplicate set for seamless continuous marquee loop */}
+          {/* Duplicate set for seamless infinite loop */}
           <span>Cybersecurity Fundamentals</span>
           <i className="text-amber-400 not-italic">✦</i>
           <span>Network & Data Communication</span>
           <i className="text-amber-400 not-italic">✦</i>
           <span>TVET 360° & Lifelong Learning</span>
           <i className="text-amber-400 not-italic">✦</i>
-          <span>Creative AI & ChatGPT Heroes</span>
+          <span>SISPEN3K Sistem Kemahiran Kelana</span>
           <i className="text-amber-400 not-italic">✦</i>
         </div>
       </section>
 
-      {/* Quick Hub (Bento Grid matching amirulhelmi.my) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-          <div>
-            <span className="text-xs font-black tracking-widest text-amber-600 uppercase">
-              QUICK HUB
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              Ringkasan utama, satu langkah ke hadapan.
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Akses pantas ke penyelidikan, inovasi, pangkalan data, dan storan Google Drive.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Card 1: Penyelidikan */}
-          <div
-            onClick={() => onNavigate('publications')}
-            className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-amber-400 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-lg group-hover:bg-amber-400 group-hover:text-slate-950 transition-colors">
-              ⌁
-            </div>
-            <div>
-              <strong className="block text-base font-extrabold text-slate-900 group-hover:text-amber-700 transition-colors">
-                Penyelidikan
-              </strong>
-              <small className="text-xs text-slate-500">
-                Penerbitan jurnal JACoIT, persidangan SPSH & buku
-              </small>
-            </div>
-            <span className="text-xs font-bold text-amber-600 flex items-center gap-1 pt-1">
-              <span>Buka Penerbitan</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+      {/* =========================================================================
+          KEY STATS / HIGHLIGHTS SECTION
+          ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+          <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-center hover:shadow-md transition-all">
+            <span className="text-3xl sm:text-4xl font-black text-[#0c1f38]">20+</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mt-1">
+              Tahun Pengalaman TVET
             </span>
           </div>
 
-          {/* Card 2: Inovasi */}
-          <div
-            onClick={() => onNavigate('innovations')}
-            className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-indigo-400 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-              ✦
-            </div>
-            <div>
-              <strong className="block text-base font-extrabold text-slate-900 group-hover:text-indigo-600 transition-colors">
-                Sistem Inovasi
-              </strong>
-              <small className="text-xs text-slate-500">
-                iPMAS, IAS, iCERT & Dr. Froats
-              </small>
-            </div>
-            <span className="text-xs font-bold text-indigo-600 flex items-center gap-1 pt-1">
-              <span>Lihat Projek Inovasi</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-center hover:shadow-md transition-all">
+            <span className="text-3xl sm:text-4xl font-black text-amber-600">5+</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mt-1">
+              Sistem Inovasi Digital
             </span>
           </div>
 
-          {/* Card 3: Google Drive */}
-          <div
-            onClick={() => onNavigate('drive')}
-            className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-blue-400 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-lg group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              ▣
-            </div>
-            <div>
-              <strong className="block text-base font-extrabold text-slate-900 group-hover:text-blue-600 transition-colors">
-                Google Drive Storan
-              </strong>
-              <small className="text-xs text-slate-500">
-                Akses & muat naik fail dokumen awan
-              </small>
-            </div>
-            <span className="text-xs font-bold text-blue-600 flex items-center gap-1 pt-1">
-              <span>Buka Google Drive</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-center hover:shadow-md transition-all">
+            <span className="text-3xl sm:text-4xl font-black text-[#0c1f38]">12+</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mt-1">
+              Penerbitan Ilmiah & Buku
             </span>
           </div>
 
-          {/* Card 4: Pangkalan Data */}
-          <div
-            onClick={() => onNavigate('database')}
-            className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-emerald-400 transition-all cursor-pointer group flex flex-col justify-between space-y-3"
-          >
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-lg group-hover:bg-emerald-600 group-hover:text-white transition-colors">
-              🗄️
-            </div>
-            <div>
-              <strong className="block text-base font-extrabold text-slate-900 group-hover:text-emerald-600 transition-colors">
-                Pangkalan Data
-              </strong>
-              <small className="text-xs text-slate-500">
-                Sistem rekod, CRUD nota & tempahan
-              </small>
-            </div>
-            <span className="text-xs font-bold text-emerald-600 flex items-center gap-1 pt-1">
-              <span>Buka Database Hub</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 text-center hover:shadow-md transition-all">
+            <span className="text-3xl sm:text-4xl font-black text-blue-700">2x</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block mt-1">
+              Anugerah APC (2008 & 2015)
             </span>
           </div>
         </div>
       </section>
 
-      {/* Section 01 / Profil (Academic & Professional Roles) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-4">
+      {/* =========================================================================
+          SECTION 06 / CURRICULUM VITAE: CV INFOGRAFIK LENGKAP (Matching Screenshot 2)
+          ========================================================================= */}
+      <CVInfographicSection onOpenPDF={() => onNavigate('cv')} />
+
+      {/* =========================================================================
+          FEATURED INOVASI SECTION (Highlighting SISPEN3K, iPMAS, IAS, iCERT)
+          ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-4 border-b border-slate-200">
           <div>
-            <span className="text-xs font-black tracking-widest text-amber-600 uppercase">
-              01 / PROFIL
+            <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">
+              PROJEK INOVASI DIGITAL
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              Akademik, teknologi dan kepimpinan perkhidmatan awam.
+            <h2 className="text-3xl sm:text-4xl font-black text-[#0c1f38] tracking-tight">
+              Inovasi Digital & TVET Unggul
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Aktif sebagai penyelidik, pembangun sistem inovasi, penceramah pakar, dan ketua unit latihan TVET.
-            </p>
           </div>
-          <button
-            onClick={() => onNavigate('profile')}
-            className="text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors cursor-pointer flex items-center gap-1 self-start md:self-auto"
-          >
-            <span>Biodata Penuh</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+          <div className="mt-4 md:mt-0 flex items-center gap-3">
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => onNavigate('admin')}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-xl text-xs font-black shadow-xs cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Inovasi (Admin)</span>
+              </button>
+            )}
+            <button
+              onClick={() => onNavigate('innovations')}
+              className="text-xs font-bold text-blue-700 hover:text-blue-900 flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <span>Lihat Semua Inovasi ({latestInno.length})</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Kelayakan Akademik Box */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-extrabold text-base">
-              <span className="text-xl">🎓</span>
-              <h3>Kelayakan Akademik</h3>
-            </div>
-            <div className="space-y-4 pt-2 border-t border-slate-100">
-              {EDUCATIONS.map(edu => (
-                <div key={edu.id} className="flex items-start gap-4 text-xs sm:text-sm">
-                  <span className="font-mono font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
-                    {edu.year}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {latestInno.map(inno => (
+            <div
+              key={inno.id}
+              className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1 relative"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="px-3 py-1 bg-amber-500/10 text-amber-800 font-black text-xs rounded-lg border border-amber-500/20">
+                    {inno.acronym}
                   </span>
-                  <div>
-                    <h4 className="font-extrabold text-slate-900">{edu.degree}</h4>
-                    <p className="text-slate-600 text-xs">{edu.field}</p>
-                    <p className="text-slate-400 text-xs font-semibold">{edu.institution}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-400 font-mono">
+                      {inno.year}
+                    </span>
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => onNavigate('admin')}
+                        className="p-1 rounded-md text-slate-400 hover:text-amber-600 hover:bg-slate-100 cursor-pointer"
+                        title="Sunting Inovasi ini di Panel Pentadbir"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* Peranan Profesional Box */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-extrabold text-base">
-              <span className="text-xl">🧭</span>
-              <h3>Peranan Profesional & Keahlian</h3>
-            </div>
-            <ul className="space-y-3 pt-2 border-t border-slate-100 text-xs sm:text-sm">
-              <li className="flex items-start gap-2 text-slate-700">
-                <span className="text-amber-500 font-bold">•</span>
-                <span><strong>Pensyarah Kanan (DH12)</strong> — Jabatan Teknologi Maklumat dan Komunikasi, PTSS.</span>
-              </li>
-              <li className="flex items-start gap-2 text-slate-700">
-                <span className="text-amber-500 font-bold">•</span>
-                <span><strong>Lantikan Perkhidmatan Awam</strong> — 15 Ogos 2005 | Sah Jawatan 29 Mei 2009.</span>
-              </li>
-              <li className="flex items-start gap-2 text-slate-700">
-                <span className="text-amber-500 font-bold">•</span>
-                <span><strong>Persekutuan Pengakap Malaysia</strong> — No. Ahli M2026-0002 & Penerima Pingat Megat Panji Alam.</span>
-              </li>
-              <li className="flex items-start gap-2 text-slate-700">
-                <span className="text-amber-500 font-bold">•</span>
-                <span><strong>Association for Information Systems (MyAIS)</strong> — No. Ahli A281.</span>
-              </li>
-              <li className="flex items-start gap-2 text-slate-700">
-                <span className="text-amber-500 font-bold">•</span>
-                <span><strong>Persatuan Kreatif AI Malaysia (PKAM)</strong> — No. Ahli PRO0010.</span>
-              </li>
-              <li className="flex items-start gap-2 text-slate-700">
-                <span className="text-amber-500 font-bold">•</span>
-                <span><strong>Penceramah Pakar CIDB Malaysia & NCER</strong> — Latihan Keusahawanan dan AI Generatif.</span>
-              </li>
-            </ul>
-          </div>
-        </div>
+                <h3 className="font-bold text-base text-slate-900 leading-snug group-hover:text-blue-700 transition-colors">
+                  {inno.title}
+                </h3>
+                <p className="text-xs text-slate-500 font-semibold mt-1 mb-3">
+                  {inno.category}
+                </p>
 
-        {/* Sejarah Perkhidmatan Timeline Preview */}
-        <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <span className="text-xs font-black tracking-widest text-slate-500 uppercase">
-                SEJARAH PERKHIDMATAN
-              </span>
-              <h3 className="text-lg font-bold text-slate-900">
-                Pengalaman kerjaya dan pembangunan TVET (2005 – kini).
-              </h3>
-            </div>
-          </div>
+                <p className="text-xs text-slate-600 leading-relaxed line-clamp-3">
+                  {inno.description}
+                </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-            {SERVICE_HISTORY.slice(0, 3).map(srv => (
-              <div key={srv.id} className="p-4 rounded-xl bg-white border border-slate-200/70 text-xs space-y-1.5">
-                <span className="font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-sm">
-                  {srv.period}
-                </span>
-                <h4 className="font-extrabold text-slate-900 text-sm">{srv.role}</h4>
-                <p className="text-slate-600 font-medium">{srv.institution}</p>
-                {srv.department && <p className="text-slate-400">{srv.department}</p>}
+                <div className="mt-4 pt-3 border-t border-slate-100 space-y-1.5">
+                  {inno.features.slice(0, 2).map((feat, fIdx) => (
+                    <div key={fIdx} className="flex items-start gap-1.5 text-[11px] text-slate-600">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                      <span className="line-clamp-1">{feat}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      {/* Section 02 / Kepakaran (Dark section matching amirulhelmi.my) */}
-      <section className="bg-slate-950 text-white py-16 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 border-y border-slate-800">
-        <div className="max-w-7xl mx-auto space-y-10">
-          <div>
-            <span className="text-xs font-black tracking-widest text-amber-400 uppercase">
-              02 / KEPAKARAN
-            </span>
-            <h2 className="text-3xl font-black text-white mt-1">
-              Merentas keselamatan siber, AI, latihan kontraktor dan TVET.
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400">
-              Kompetensi profesional dan kepakaran terbukti berlandaskan pengalaman industri dan akademik.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 hover:border-amber-400 transition-all">
-              <span className="text-3xl">🛡️</span>
-              <h3 className="text-base font-extrabold text-white">Keselamatan Siber</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Prinsip CIA Triad, analisis serangan malware, mitigasi kerentanan, etika siber, dan pertahanan rangkaian sistem maklumat.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 hover:border-amber-400 transition-all">
-              <span className="text-3xl">🌐</span>
-              <h3 className="text-base font-extrabold text-white">Komunikasi Data & Rangkaian</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Seni bina TCP/IP, Cisco Packet Tracer, penganalisisan paket data Wireshark, penghalaan (routing), dan subnetting praktikal.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 hover:border-amber-400 transition-all">
-              <span className="text-3xl">🤖</span>
-              <h3 className="text-base font-extrabold text-white">AI Kreatif & Keusahawanan</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Penceramah jemputan ViralPreneur AI Mastery Zon Utara & latihan ChatGPT untuk produktiviti pelajar dan usahawan PKS.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 hover:border-amber-400 transition-all">
-              <span className="text-3xl">🏗️</span>
-              <h3 className="text-base font-extrabold text-white">Penceramah Pakar CIDB</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Penceramah Pusat Khidmat Kontraktor Malaysia di bawah program CIDB Malaysia dan latihan pensijilan keusahawanan NCER.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 03 / Penyelidikan & Penerbitan */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-4">
-          <div>
-            <span className="text-xs font-black tracking-widest text-amber-600 uppercase">
-              03 / PENYELIDIKAN
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              Penerbitan berwasit, persidangan antarabangsa dan buku panduan.
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Kajian empirikal dalam bidang kecerdasan buatan, TVET 360°, dan literasi teknologi maklumat.
-            </p>
-          </div>
-          <button
-            onClick={() => onNavigate('publications')}
-            className="text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors cursor-pointer flex items-center gap-1 self-start md:self-auto"
-          >
-            <span>Semua Penerbitan (12)</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {latestPubs.map(pub => (
-            <div
-              key={pub.id}
-              className="p-5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-amber-400 transition-all space-y-2 flex flex-col justify-between"
-            >
-              <div className="space-y-1.5">
+              <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-slate-500">
+                  Status: {inno.status}
+                </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                    {pub.year}
-                  </span>
-                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                    {pub.type}
-                  </span>
+                  {inno.driveUrl && (
+                    <a
+                      href={inno.driveUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Buka Folder Google Drive"
+                    >
+                      <HardDrive className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  {inno.websiteUrl && (
+                    <a
+                      href={inno.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                      title="Buka Laman Web Inovasi"
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                    </a>
+                  )}
+                  <button
+                    onClick={() => onNavigate('innovations')}
+                    className="text-xs font-bold text-[#0c1f38] hover:text-blue-600 flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Terperinci</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-                <h4 className="text-base font-extrabold text-slate-900 leading-snug">
-                  {pub.title}
-                </h4>
-                <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
-                  {pub.summary}
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-400 italic text-[11px] truncate max-w-[200px]">
-                  {pub.venue || 'Prosiding Rasmi'}
-                </span>
-                <button
-                  onClick={() => onNavigate('publications')}
-                  className="font-bold text-amber-600 hover:underline cursor-pointer"
-                >
-                  Butiran ↗
-                </button>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Section 04 / Sistem Inovasi */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-4">
+      {/* =========================================================================
+          NAVIGATION LINKS SECTION: "Pautan Navigasi Luar & Google Drive"
+          Directly satisfies user prompt: "masukkan link navigation ke website/drive"
+          ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-slate-200">
           <div>
-            <span className="text-xs font-black tracking-widest text-amber-600 uppercase">
-              04 / SISTEM INOVASI
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              Penyelesaian digital pintar untuk ekosistem TVET.
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Sistem berimpak tinggi yang memperkasa operasi akademik dan pentadbiran politeknik.
-            </p>
-          </div>
-          <button
-            onClick={() => onNavigate('innovations')}
-            className="text-xs font-bold text-amber-600 hover:text-amber-800 transition-colors cursor-pointer flex items-center gap-1 self-start md:self-auto"
-          >
-            <span>Semua Inovasi (4)</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {INNOVATIONS.map(inv => (
-            <div
-              key={inv.id}
-              className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md hover:border-amber-400 transition-all flex flex-col justify-between space-y-4"
-            >
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-black px-2.5 py-1 rounded-lg bg-slate-950 text-amber-400">
-                    {inv.acronym}
-                  </span>
-                  <span className="text-xs font-bold text-slate-400">{inv.year}</span>
-                </div>
-                <h4 className="text-base font-extrabold text-slate-900">{inv.title}</h4>
-                <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
-                  {inv.description}
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs font-bold">
-                <span className={inv.status === 'Completed' ? 'text-emerald-600' : 'text-amber-600'}>
-                  • {inv.status === 'Completed' ? 'Selesai' : 'Aktif Dibangunkan'}
-                </span>
-                <button
-                  onClick={() => onNavigate('innovations')}
-                  className="text-amber-700 hover:underline cursor-pointer"
-                >
-                  Teroka ↗
-                </button>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-amber-600 uppercase tracking-widest block mb-1">
+                PAUTAN RASMI & STORAN AWAN
+              </span>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Section 05 / Arkib Rujukan Rasmi (Matching amirulhelmi.my) */}
-      <section className="bg-gradient-to-b from-white to-slate-50 py-12 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto space-y-6">
-          <div>
-            <span className="text-xs font-black tracking-widest text-amber-600 uppercase">
-              ARKIB RUJUKAN
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-              Profil rujukan profesional.
+            <h2 className="text-3xl sm:text-4xl font-black text-[#0c1f38] tracking-tight">
+              Pautan Navigasi Luar & Google Drive
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
-              Rujukan akademik dan pengurusan tertinggi untuk pengesahan rekod dan kolaborasi rasmi.
+            <p className="text-xs sm:text-sm text-slate-500 mt-1">
+              Akses terus ke laman web luar, repositori Google Drive, sistem TVET, dan pangkalan penyelidikan rasmi.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {REFERENCES.map((ref, idx) => (
-              <div
-                key={idx}
-                className="p-6 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2 flex items-start gap-4"
+          <div className="mt-4 md:mt-0 flex items-center gap-3">
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={() => setIsAddLinkModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#0c1f38] hover:bg-blue-950 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer hover:scale-102"
               >
-                <div className="w-12 h-12 rounded-xl bg-slate-900 text-amber-400 flex items-center justify-center font-bold text-xl flex-shrink-0">
-                  <UserCheck className="w-6 h-6" />
+                <Plus className="w-3.5 h-3.5 text-amber-400" />
+                <span>+ Masukkan Pautan Navigasi</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-2 text-xs font-bold scrollbar-none">
+          {[
+            { id: 'all', label: `Semua Pautan (${navLinks.length})` },
+            { id: 'drive', label: 'Google Drive' },
+            { id: 'website', label: 'Laman Web' },
+            { id: 'inovasi', label: 'Inovasi' },
+            { id: 'penyelidikan', label: 'Penyelidikan' },
+            { id: 'pengajaran', label: 'Pengajaran & LMS' },
+          ].map(f => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setSelectedNavFilter(f.id)}
+              className={`px-3.5 py-1.5 rounded-full whitespace-nowrap transition-all cursor-pointer ${
+                selectedNavFilter === f.id
+                  ? 'bg-[#0c1f38] text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Navigation Link Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredLinks.map(link => (
+            <div
+              key={link.id}
+              className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group relative"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                        link.type === 'drive'
+                          ? 'bg-blue-50 text-blue-600'
+                          : 'bg-amber-50 text-amber-700'
+                      }`}
+                    >
+                      {link.type === 'drive' ? (
+                        <HardDrive className="w-4 h-4" />
+                      ) : (
+                        <Globe className="w-4 h-4" />
+                      )}
+                    </div>
+                    <span
+                      className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border ${
+                        link.type === 'drive'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-amber-50 text-amber-800 border-amber-200'
+                      }`}
+                    >
+                      {link.badge || (link.type === 'drive' ? 'Google Drive' : 'Website')}
+                    </span>
+                  </div>
+
+                  {isAdmin && (
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={e => handleDeleteLink(link.id, e)}
+                        className="p-1 rounded-md text-red-400 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+                        title="Padam Pautan Ini (Admin)"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-                <div className="space-y-1">
-                  <h4 className="text-base font-extrabold text-slate-900">{ref.name}</h4>
-                  <p className="text-xs font-bold text-amber-700">{ref.title}</p>
-                  <p className="text-xs text-slate-600">{ref.department}</p>
-                  <p className="text-xs text-slate-500">{ref.institution}, {ref.location}</p>
-                </div>
+
+                <h3 className="font-bold text-slate-900 text-sm leading-snug group-hover:text-blue-700 transition-colors">
+                  {link.title}
+                </h3>
+
+                {link.description && (
+                  <p className="text-xs text-slate-500 mt-1.5 leading-relaxed line-clamp-2">
+                    {link.description}
+                  </p>
+                )}
               </div>
-            ))}
+
+              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span className="text-[11px] text-slate-400 font-mono truncate max-w-[180px]">
+                  {link.url.replace(/^https?:\/\//, '')}
+                </span>
+
+                <a
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
+                >
+                  <span>Buka Pautan</span>
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* =========================================================================
+          TEROKA HUB CONNECTIVITY CARDS (Google Drive & Safe Navigation)
+          ========================================================================= */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-[#0c1f38] to-[#122e54] rounded-3xl p-8 sm:p-12 text-white shadow-2xl relative overflow-hidden">
+          <div className="relative z-10 max-w-3xl">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-widest block mb-2">
+              TEROKA PORTAL & INTEGRASI
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-4">
+              Pusat Dokumen Google Drive & Repositori Akademik
+            </h2>
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed mb-8">
+              Akses pantas fail kurikulum, slaid pengajaran, dan dokumen rasmi menggunakan integrasi Google Drive v3 secara langsung, atau semak penerbitan ilmiah terkini.
+            </p>
+
+            <div className="flex flex-wrap gap-4">
+              <button
+                onClick={() => onNavigate('drive')}
+                className="px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center gap-2.5 cursor-pointer hover:scale-102"
+              >
+                <HardDrive className="w-4 h-4" />
+                <span>Buka Google Drive Portal</span>
+              </button>
+
+              <button
+                onClick={() => onNavigate('publications')}
+                className="px-6 py-3.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2.5 cursor-pointer hover:scale-102"
+              >
+                <BookOpen className="w-4 h-4 text-amber-400" />
+                <span>Repositori & Penerbitan</span>
+              </button>
+
+              {isAdmin && (
+                <button
+                  onClick={() => onNavigate('admin')}
+                  className="px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2.5 cursor-pointer hover:scale-102 shadow-lg"
+                >
+                  <ShieldCheck className="w-4 h-4 text-slate-950" />
+                  <span>Panel Pentadbir (CRUD & Navigasi)</span>
+                </button>
+              )}
+
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center gap-2.5 cursor-pointer hover:scale-102"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>WhatsApp Rasmi</span>
+              </a>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* =========================================================================
+          ADMIN QUICK HERO EDIT MODAL
+          ========================================================================= */}
+      {isHeroEditOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                <h3 className="font-extrabold text-slate-900 text-lg">Sunting Maklumat Hero & Biodata</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsHeroEditOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveHero} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Nama Penuh</label>
+                <input
+                  type="text"
+                  required
+                  value={editHeroName}
+                  onChange={e => setEditHeroName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Jawatan Rasmi</label>
+                <input
+                  type="text"
+                  required
+                  value={editHeroTitle}
+                  onChange={e => setEditHeroTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Keterangan Ringkas (Bio Hero)</label>
+                <textarea
+                  rows={4}
+                  required
+                  value={editHeroBio}
+                  onChange={e => setEditHeroBio(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsHeroEditOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-[#0c1f38] hover:bg-blue-950 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Simpan Perubahan</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          ADMIN QUICK ADD NAVIGATION LINK MODAL
+          ========================================================================= */}
+      {isAddLinkModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <h3 className="font-extrabold text-slate-900 text-lg">Masukkan Link Navigation (Website / Drive)</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddLinkModalOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateQuickLink} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Tajuk / Nama Pautan *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Cth: Folder Modul Google Drive / Portal SISPEN3K"
+                  value={newLinkTitle}
+                  onChange={e => setNewLinkTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Jenis Destinasi *</label>
+                  <select
+                    value={newLinkType}
+                    onChange={e => setNewLinkType(e.target.value as any)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                  >
+                    <option value="website">🌐 Laman Web Luar / URL</option>
+                    <option value="drive">📁 Google Drive (Folder / Fail)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Kategori Navigasi</label>
+                  <select
+                    value={newLinkCategory}
+                    onChange={e => setNewLinkCategory(e.target.value as any)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                  >
+                    <option value="teroka">Teroka Portal</option>
+                    <option value="inovasi">Inovasi TVET</option>
+                    <option value="penyelidikan">Penyelidikan & Penerbitan</option>
+                    <option value="pengajaran">Pengajaran & LMS</option>
+                    <option value="quicklink">Pautan Pantas</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">URL Pautan (https://...) *</label>
+                <input
+                  type="url"
+                  required
+                  placeholder="https://drive.google.com/... atau https://..."
+                  value={newLinkUrl}
+                  onChange={e => setNewLinkUrl(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden font-mono"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Teks Lencana (Badge)</label>
+                  <input
+                    type="text"
+                    placeholder="Cth: Google Drive / Live Web App"
+                    value={newLinkBadge}
+                    onChange={e => setNewLinkBadge(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Keterangan Ringkas</label>
+                  <input
+                    type="text"
+                    placeholder="Keterangan dokumen/laman"
+                    value={newLinkDesc}
+                    onChange={e => setNewLinkDesc(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-amber-500 focus:outline-hidden"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setIsAddLinkModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Simpan Pautan</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

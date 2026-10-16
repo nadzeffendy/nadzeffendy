@@ -81,10 +81,13 @@ export const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onNav
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {[
                   { label: 'Laman Utama', page: 'home' as PageId },
+                  { label: 'CV Infografik', page: 'cv' as PageId },
                   { label: 'Biodata & Perkhidmatan', page: 'profile' as PageId },
-                  { label: 'Kursus JTMK', page: 'teaching' as PageId },
-                  { label: 'Sistem Inovasi', page: 'innovations' as PageId },
-                  { label: 'Pangkalan Data', page: 'database' as PageId },
+                  { label: 'Kepakaran JTMK', page: 'teaching' as PageId },
+                  { label: 'Sistem Inovasi (SISPEN3K)', page: 'innovations' as PageId },
+                  { label: 'News & Acara', page: 'news' as PageId },
+                  { label: 'Galeri Foto', page: 'gallery' as PageId },
+                  { label: 'Admin (Portal Kandungan)', page: 'admin' as PageId },
                   { label: 'Google Drive', page: 'drive' as PageId },
                 ].map(nav => (
                   <button

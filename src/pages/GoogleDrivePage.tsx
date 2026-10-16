@@ -30,6 +30,8 @@ import {
 import { GoogleSignInButton } from '../components/GoogleSignInButton';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { User as FirebaseUser } from 'firebase/auth';
+import { getAdminNavLinks, subscribeToAdminData } from '../services/adminDataService';
+import { NavigationLink } from '../types';
 
 interface GoogleDrivePageProps {
   googleUser: FirebaseUser | null;
@@ -48,6 +50,17 @@ export const GoogleDrivePage: React.FC<GoogleDrivePageProps> = ({
   const [activeFilter, setActiveFilter] = useState<string>('all');
   const [isLiveDrive, setIsLiveDrive] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [adminDriveLinks, setAdminDriveLinks] = useState<NavigationLink[]>(
+    getAdminNavLinks().filter(l => l.type === 'drive')
+  );
+
+  useEffect(() => {
+    setAdminDriveLinks(getAdminNavLinks().filter(l => l.type === 'drive'));
+    const unsub = subscribeToAdminData(() => {
+      setAdminDriveLinks(getAdminNavLinks().filter(l => l.type === 'drive'));
+    });
+    return () => unsub();
+  }, []);
 
   // Modals state
   const [isNewFolderModalOpen, setIsNewFolderModalOpen] = useState(false);
@@ -306,6 +319,33 @@ export const GoogleDrivePage: React.FC<GoogleDrivePageProps> = ({
         <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           <span>Status API: {apiError}. (Paparan ditukar ke arkib demo)</span>
+        </div>
+      )}
+
+      {/* Pautan Pantas Google Drive Pentadbir */}
+      {adminDriveLinks.length > 0 && (
+        <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl">
+          <div className="flex items-center gap-2 mb-2.5">
+            <Folder className="w-4 h-4 text-amber-500" />
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Pautan Folder Pantas Google Drive (Ditetapkan Pentadbir)
+            </h4>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {adminDriveLinks.map(link => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-blue-400 hover:text-blue-700 text-slate-800 text-xs font-semibold shadow-2xs transition-all hover:scale-102 cursor-pointer"
+              >
+                <HardDrive className="w-3.5 h-3.5 text-blue-600" />
+                <span>{link.title}</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+            ))}
+          </div>
         </div>
       )}
 

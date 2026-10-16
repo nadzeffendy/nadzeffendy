@@ -4,6 +4,10 @@ export type PageId =
   | 'teaching'
   | 'innovations'
   | 'publications'
+  | 'cv'
+  | 'news'
+  | 'gallery'
+  | 'admin'
   | 'database'
   | 'drive'
   | 'contact';
@@ -33,6 +37,8 @@ export interface TeachingCourse {
   level: string;
   tags: string[];
   materialsCount: number;
+  driveUrl?: string;
+  websiteUrl?: string;
 }
 
 export interface InnovationProject {
@@ -45,6 +51,8 @@ export interface InnovationProject {
   features: string[];
   status: 'Active' | 'Completed' | 'In Progress';
   iconName: string;
+  driveUrl?: string;
+  websiteUrl?: string;
 }
 
 export interface PublicationItem {
@@ -56,6 +64,19 @@ export interface PublicationItem {
   doi?: string;
   summary: string;
   tags: string[];
+  driveUrl?: string;
+  websiteUrl?: string;
+}
+
+export interface NavigationLink {
+  id: string;
+  title: string;
+  url: string;
+  type: 'website' | 'drive' | 'internal';
+  targetPage?: PageId;
+  category: 'header' | 'teroka' | 'penyelidikan' | 'pengajaran' | 'inovasi' | 'quicklink';
+  description?: string;
+  badge?: string;
 }
 
 export interface ProfessionalMembership {
@@ -92,7 +113,7 @@ export interface ReferencePerson {
 // Database Hub Records
 export interface DatabaseRecord {
   id: string;
-  category: 'pelajar' | 'bahan_kuliah' | 'inovasi' | 'tempahan_penceramah';
+  category: 'pelajar' | 'bahan_kuliah' | 'inovasi' | 'penyelidikan' | 'pautan_navigasi' | 'tempahan_penceramah';
   title: string;
   description: string;
   authorOrSubmitter: string;
@@ -101,6 +122,8 @@ export interface DatabaseRecord {
   dateAdded: string;
   tags?: string[];
   link?: string;
+  driveUrl?: string;
+  websiteUrl?: string;
 }
 
 // Google Drive Item

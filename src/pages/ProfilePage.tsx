@@ -23,8 +23,19 @@ import {
   REFERENCES,
 } from '../data/nadzEffendyData';
 import { AvatarDisplay } from '../components/AvatarDisplay';
+import { getAdminProfile, subscribeToAdminData } from '../services/adminDataService';
 
 export const ProfilePage: React.FC = () => {
+  const [profile, setProfile] = React.useState(getAdminProfile());
+
+  React.useEffect(() => {
+    setProfile(getAdminProfile());
+    const unsub = subscribeToAdminData(() => {
+      setProfile(getAdminProfile());
+    });
+    return () => unsub();
+  }, []);
+
   const handlePrint = () => {
     window.print();
   };
@@ -58,14 +69,14 @@ export const ProfilePage: React.FC = () => {
         <AvatarDisplay size="lg" allowUpload={true} />
         <div className="space-y-2 text-center sm:text-left flex-1">
           <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-indigo-500/20 text-cyan-300 text-xs font-bold border border-cyan-400/30">
-            <span>Pegawai Pendidikan Pengajian Tinggi • Gred DH12</span>
+            <span>Pegawai Pendidikan Pengajian Tinggi • {profile.grade || 'Gred DH12'}</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-black text-white">{PERSONAL_INFO.name}</h2>
+          <h2 className="text-2xl sm:text-3xl font-black text-white">{profile.name}</h2>
           <p className="text-xs sm:text-sm text-indigo-200 font-semibold">
-            {PERSONAL_INFO.department}, {PERSONAL_INFO.institution}
+            {profile.department}, {profile.institution}
           </p>
           <p className="text-xs text-slate-300 max-w-2xl leading-relaxed pt-1">
-            {PERSONAL_INFO.bio}
+            {profile.bio}
           </p>
         </div>
       </div>
@@ -82,32 +93,32 @@ export const ProfilePage: React.FC = () => {
           <div className="space-y-3 text-xs sm:text-sm">
             <div className="flex justify-between py-1.5 border-b border-slate-50">
               <span className="text-slate-500 font-medium">Nama Penuh:</span>
-              <span className="font-bold text-slate-900">{PERSONAL_INFO.name}</span>
+              <span className="font-bold text-slate-900">{profile.name}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-50">
               <span className="text-slate-500 font-medium">Jantina & Kaum:</span>
-              <span className="font-semibold text-slate-900">{PERSONAL_INFO.gender} • {PERSONAL_INFO.ethnicity}</span>
+              <span className="font-semibold text-slate-900">{profile.gender || PERSONAL_INFO.gender} • {profile.ethnicity || PERSONAL_INFO.ethnicity}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-50">
               <span className="text-slate-500 font-medium">No. Telefon Bimbit:</span>
-              <a href={`tel:${PERSONAL_INFO.phone}`} className="font-bold text-indigo-600 hover:underline">
-                {PERSONAL_INFO.phone}
+              <a href={`tel:${profile.phone}`} className="font-bold text-indigo-600 hover:underline">
+                {profile.phone}
               </a>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-50">
               <span className="text-slate-500 font-medium">No. Telefon Pejabat / Faks:</span>
-              <span className="font-semibold text-slate-900">{PERSONAL_INFO.officePhone} / {PERSONAL_INFO.officeFax}</span>
+              <span className="font-semibold text-slate-900">{profile.officePhone || PERSONAL_INFO.officePhone} / {profile.officeFax || PERSONAL_INFO.officeFax}</span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-50">
               <span className="text-slate-500 font-medium">Emel Rasmi PTSS:</span>
-              <a href={`mailto:${PERSONAL_INFO.emailPTSS}`} className="font-semibold text-slate-800 hover:text-indigo-600">
-                {PERSONAL_INFO.emailPTSS}
+              <a href={`mailto:${profile.emailPTSS}`} className="font-semibold text-slate-800 hover:text-indigo-600">
+                {profile.emailPTSS}
               </a>
             </div>
             <div className="flex justify-between py-1.5 border-b border-slate-50">
               <span className="text-slate-500 font-medium">Emel Alternatif:</span>
-              <a href={`mailto:${PERSONAL_INFO.emailPersonal}`} className="font-semibold text-slate-800 hover:text-indigo-600">
-                {PERSONAL_INFO.emailPersonal}
+              <a href={`mailto:${profile.emailPersonal}`} className="font-semibold text-slate-800 hover:text-indigo-600">
+                {profile.emailPersonal}
               </a>
             </div>
             <div className="pt-2">
